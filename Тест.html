@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест: Системы линейных уравнений</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            width: 100%;
+            max-width: 700px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            font-size: 0.9em;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+        .progress {
+            height: 100%;
+            background-color: #3498db;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .element-tag {
+            display: inline-block;
+            background-color: #e8f4f8;
+            color: #2980b9;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .question {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .option {
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1em;
+        }
+        .option:hover {
+            background-color: #e9ecef;
+            border-color: #ced4da;
+        }
+        .option.correct {
+            background-color: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+            cursor: default;
+        }
+        .option.incorrect {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+            cursor: default;
+        }
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+        .feedback.show { display: block; }
+        .feedback.correct-fb { background-color: #d1e7dd; border-left: 5px solid #0f5132; }
+        .feedback.incorrect-fb { background-color: #f8d7da; border-left: 5px solid #842029; }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background-color: #2980b9; }
+        .btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+        
+        .results {
+            text-align: center;
+            display: none;
+        }
+        .results h2 { color: #2c3e50; }
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: #3498db;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            font-weight: bold;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Системы линейных уравнений</h1>
+    <p class="subtitle">Критериально-ориентированный тест (Алгебра 7 кл.)</p>
+    
+    <div id="quiz-container">
+        <div class="progress-bar"><div class="progress" id="progress"></div></div>
+        <div id="question-area">
+            <div class="element-tag" id="element-tag"></div>
+            <div class="question" id="question-text"></div>
+            <div class="options" id="options-container"></div>
+            <div class="feedback" id="feedback"></div>
+            <button class="btn" id="next-btn" style="display:none;" onclick="nextQuestion()">Следующий вопрос</button>
+        </div>
+    </div>
+
+    <div class="results" id="results">
+        <h2>Тест завершен!</h2>
+        <div class="score-circle" id="final-score"></div>
+        <p id="result-message"></p>
+        <button class="btn" onclick="restartQuiz()">Пройти заново</button>
+    </div>
+</div>
+
+<script>
+    const quizData = [
+        {
+            element: "Понятие системы и её решения (А)",
+            question: "Является ли пара чисел x=2, y=-1 решением системы {x+y=1; 3x-y=7}?",
+            options: [
+                { text: "а) Да", correct: true, msg: "Верно! Подставим: 2+(-1)=1 (верно), 3(2)-(-1)=7 (верно). Оба уравнения выполнены." },
+                { text: "б) Нет", correct: false, msg: "Ошибка: Арифметическая ошибка при проверке. Внимательнее считайте!" },
+                { text: "в) Только для первого", correct: false, msg: "Ошибка: Игнорирование знака «минус» во втором уравнении (3*2 - (-1) = 7)." },
+                { text: "г) Только для второго", correct: false, msg: "Ошибка: Подстановка только в одно уравнение или ошибка в первом (2+(-1)=1)." }
+            ]
+        },
+        {
+            element: "Графический метод решения (А)",
+            question: "Найдите координаты точки пересечения прямых y = 2x и y = -x + 3.",
+            options: [
+                { text: "а) (1; 2)", correct: true, msg: "Верно! Приравняем: 2x = -x+3 => 3x=3 => x=1. Тогда y=2*1=2." },
+                { text: "б) (2; 1)", correct: false, msg: "Ошибка: Перепутаны координаты x и y местами." },
+                { text: "в) (1,5; 3)", correct: false, msg: "Ошибка: Ошибка при решении уравнения 2x = -x+3 (неверно перенесен x)." },
+                { text: "г) (0; 3)", correct: false, msg: "Ошибка: Подстановка x=0 вместо полноценного решения системы." }
+            ]
+        },
+        {
+            element: "Способ подстановки (А)",
+            question: "Решите систему способом подстановки: {y = x - 2; 2x + 3y = 9}",
+            options: [
+                { text: "а) (3; 1)", correct: true, msg: "Верно! 2x + 3(x-2) = 9 => 5x - 6 = 9 => 5x = 15 => x=3. y = 3-2 = 1." },
+                { text: "б) (1; 3)", correct: false, msg: "Ошибка: Перепутаны координаты x и y местами." },
+                { text: "в) (3; 5)", correct: false, msg: "Ошибка: Ошибка при подстановке y=x-2 или вычислении y." },
+                { text: "г) (-3; 1)", correct: false, msg: "Ошибка: Неверный перенос слагаемого при решении 5x=15 (потерян знак)." }
+            ]
+        },
+        {
+            element: "Способ сложения (А)",
+            question: "Решите систему способом сложения: {2x + y = 5; 3x - y = 10}",
+            options: [
+                { text: "а) (3; -1)", correct: true, msg: "Верно! Сложим уравнения: 5x = 15 => x=3. Подставим: 6 + y = 5 => y=-1." },
+                { text: "б) (3; 1)", correct: false, msg: "Ошибка: Потеря знака «минус» при нахождении y (6+y=5 => y=-1, а не 1)." },
+                { text: "в) (1; 3)", correct: false, msg: "Ошибка: Перепутаны координаты x и y местами." },
+                { text: "г) (3; 11)", correct: false, msg: "Ошибка: Прибавление вместо вычитания при подстановке x в первое уравнение." }
+            ]
+        },
+        {
+            element: "Количество решений (А)",
+            question: "Сколько решений имеет система {2x - y = 3; 4x - 2y = 5}?",
+            options: [
+                { text: "а) Одно", correct: false, msg: "Ошибка: Не заметил пропорциональность коэффициентов при x и y." },
+                { text: "б) Ни одного", correct: true, msg: "Верно! Умножим 1-е на 2: 4x-2y=6. Но во 2-м уравнении 4x-2y=5. 6=5 — неверно, прямые параллельны." },
+                { text: "в) Бесконечно много", correct: false, msg: "Ошибка: Увидел пропорциональность, но не проверил свободные члены (6 ≠ 5)." },
+                { text: "г) Зависит от x", correct: false, msg: "Ошибка: Не понял вопрос о количестве решений системы." }
+            ]
+        },
+        {
+            element: "Составление системы по условию (А)",
+            question: "Сумма двух чисел равна 12, а их разность равна 2. Какая система соответствует условию?",
+            options: [
+                { text: "а) {x+y=12; x-y=2}", correct: true, msg: "Верно! Сумма — это x+y, разность — это x-y." },
+                { text: "б) {x+y=2; x-y=12}", correct: false, msg: "Ошибка: Перепутаны числа 12 и 2 местами." },
+                { text: "в) {xy=12; x/y=2}", correct: false, msg: "Ошибка: Использование произведения и частного вместо суммы и разности." },
+                { text: "г) {x+y=12; y-x=2}", correct: false, msg: "Ошибка: Разность записана в обратном порядке (обычно подразумевают первое минус второе)." }
+            ]
+        },
+        {
+            element: "Проверка решения подстановкой (А)",
+            question: "Пара чисел (x; y) является решением системы {2x + y = 7; x - y = 2}. Найдите x.",
+            options: [
+                { text: "а) x = 3", correct: true, msg: "Верно! Сложим уравнения: (2x+y) + (x-y) = 7+2 => 3x = 9 => x=3." },
+                { text: "б) x = 2", correct: false, msg: "Ошибка: Ошибка при сложении уравнений (неверно устранен y)." },
+                { text: "в) x = 5", correct: false, msg: "Ошибка: Перепутаны x и y (это значение y, так как y = x-2 = 3-2=1... стоп, тут x=3, y=1. Ошибка в арифметике)." },
+                { text: "г) x = 4", correct: false, msg: "Ошибка: Арифметическая ошибка при делении 3x=9." }
+            ]
+        },
+        {
+            element: "Системы с параметром (В)",
+            question: "При каком значении a система {ax + y = 5; 2x + 3y = 6} имеет единственное решение?",
+            options: [
+                { text: "а) a ≠ 2/3", correct: true, msg: "Верно! Единственное решение, если коэффициенты не пропорциональны: a/2 ≠ 1/3 => a ≠ 2/3." },
+                { text: "б) a = 2/3", correct: false, msg: "Ошибка: Путаница условия единственного решения (это условие отсутствия или бесконечности решений)." },
+                { text: "в) a ≠ 3/2", correct: false, msg: "Ошибка: Перевёрнута дробь при решении пропорции a/2 = 1/3." },
+                { text: "г) Любое a", correct: false, msg: "Ошибка: Не учтён случай параллельности или совпадения прямых." }
+            ]
+        },
+        {
+            element: "Текстовая задача на движение (В)",
+            question: "Два автомобиля выехали навстречу из A и B (300 км). Встретились через 2 ч. Если бы 1-й ехал в 2 раза быстрее, встретились бы через 1,5 ч. Найдите скорость 1-го.",
+            options: [
+                { text: "а) 50 км/ч", correct: true, msg: "Верно! v1+v2 = 300/2 = 150. 2v1+v2 = 300/1.5 = 200. Вычтем: v1 = 50." },
+                { text: "б) 60 км/ч", correct: false, msg: "Ошибка: Арифметическая ошибка при вычитании 200-150 или делении 300/1.5." },
+                { text: "в) 90 км/ч", correct: false, msg: "Ошибка: Перепутано, какой автомобиль ускоряется (нашли скорость второго)." },
+                { text: "г) 75 км/ч", correct: false, msg: "Ошибка: Предположение о равенстве скоростей (300 / 2 / 2)." }
+            ]
+        },
+        {
+            element: "Исследование системы (В)",
+            question: "Исследуйте систему {x + ky = 2; kx + 4y = 4} на количество решений в зависимости от k.",
+            options: [
+                { text: "а) При k=2 — бесконечно много; при k=-2 — ни одного", correct: true, msg: "Верно! При k=2: x+2y=2 и 2x+4y=4 (совпадают). При k=-2: x-2y=2 и -2x+4y=4 (параллельны)." },
+                { text: "б) При k=2 — ни одного; при k=-2 — бесконечно много", correct: false, msg: "Ошибка: Перепутаны случаи k=2 и k=-2 местами." },
+                { text: "в) Всегда одно решение", correct: false, msg: "Ошибка: Не рассмотрены особые случаи k=±2, когда определитель системы равен 0." },
+                { text: "г) Зависит от y", correct: false, msg: "Ошибка: Некорректный ответ, количество решений зависит от параметра k." }
+            ]
+        }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+
+    function loadQuestion() {
+        const q = quizData[currentQuestion];
+        document.getElementById('element-tag').innerText = q.element;
+        document.getElementById('question-text').innerText = q.question;
+        
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+        
+        q.options.forEach((opt, index) => {
+            const div = document.createElement('div');
+            div.className = 'option';
+            div.innerText = opt.text;
+            div.onclick = () => selectOption(index);
+            optionsContainer.appendChild(div);
+        });
+
+        document.getElementById('feedback').className = 'feedback';
+        document.getElementById('feedback').innerText = '';
+        document.getElementById('next-btn').style.display = 'none';
+        
+        updateProgress();
+    }
+
+    function selectOption(selectedIndex) {
+        const q = quizData[currentQuestion];
+        const options = document.querySelectorAll('.option');
+        const feedback = document.getElementById('feedback');
+        
+        // Блокируем дальнейший выбор
+        options.forEach(opt => opt.onclick = null);
+
+        const isCorrect = q.options[selectedIndex].correct;
+        
+        if (isCorrect) {
+            options[selectedIndex].classList.add('correct');
+            feedback.className = 'feedback correct-fb show';
+            feedback.innerHTML = `<strong>✅ Верно!</strong> ${q.options[selectedIndex].msg}`;
+            score++;
+        } else {
+            options[selectedIndex].classList.add('incorrect');
+            // Подсвечиваем правильный ответ
+            q.options.forEach((opt, idx) => {
+                if (opt.correct) options[idx].classList.add('correct');
+            });
+            feedback.className = 'feedback incorrect-fb show';
+            feedback.innerHTML = `<strong>❌ Неверно.</strong> ${q.options[selectedIndex].msg}`;
+        }
+
+        document.getElementById('next-btn').style.display = 'block';
+        if (currentQuestion === quizData.length - 1) {
+            document.getElementById('next-btn').innerText = 'Показать результат';
+        }
+    }
+
+    function nextQuestion() {
+        currentQuestion++;
+        if (currentQuestion < quizData.length) {
+            loadQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function updateProgress() {
+        const progress = ((currentQuestion) / quizData.length) * 100;
+        document.getElementById('progress').style.width = progress + '%';
+    }
+
+    function showResults() {
+        document.getElementById('quiz-container').style.display = 'none';
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('final-score').innerText = `${score}/${quizData.length}`;
+        
+        let message = '';
+        const percent = (score / quizData.length) * 100;
+        if (percent === 100) message = 'Превосходно! Вы отлично разбираетесь в теме.';
+        else if (percent >= 70) message = 'Хороший результат! Но есть над чем поработать.';
+        else message = 'Рекомендуем повторить теорию и методы решения систем.';
+        
+        document.getElementById('result-message').innerText = message;
+    }
+
+    function restartQuiz() {
+        currentQuestion = 0;
+        score = 0;
+        document.getElementById('quiz-container').style.display = 'block';
+        document.getElementById('results').style.display = 'none';
+        document.getElementById('next-btn').innerText = 'Следующий вопрос';
+        loadQuestion();
+    }
+
+    // Запуск
+    loadQuestion();
+</script>
+
+</body>
+</html>
